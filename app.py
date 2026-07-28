@@ -83,7 +83,7 @@ def run_simulation(n_iters):
 
 st.title("ガチャ必要石シミュレーション")
 
-n_iters = st.number_input("試行回数を入力してください", min_value=1000, max_value=1000000, value=10000, step=1000)
+n_iters = st.number_input("試行回数を入力してください", min_value=1, max_value=1000000, value=10000, step=1)
 
 if st.button("シミュレーションを実行する"):
     with st.spinner("アロナが一生懸命計算しています...！"):
