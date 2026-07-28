@@ -1,6 +1,7 @@
 import random
 import numpy as np
 import matplotlib.pyplot as plt
+import streamlit as st
 
 def run_simulation(n_iters):
     old_stones_list = np.zeros(n_iters, dtype=int)
@@ -70,7 +71,7 @@ def run_simulation(n_iters):
                         got_A_new = True
                     else:
                         got_B_new = True
-                    charge = 0
+                        charge = 0
 
                 if total_pulls in (70, 130, 150, 170, 270, 330, 350, 370) and total_pulls not in claimed_tickets:
                     tickets += 1
@@ -80,57 +81,56 @@ def run_simulation(n_iters):
 
     return old_stones_list, new_stones_list
 
-def print_stats(name, data):
-    print(f"--- {name} ---")
-    print(f"Mean: {np.mean(data):.1f}")
-    print(f"Std Dev: {np.std(data):.1f}")
-    print(f"Variance: {np.var(data):.1f}")
-    print(f"Min: {np.min(data)}")
-    print(f"Q1 (25%): {np.percentile(data, 25)}")
-    print(f"Median: {np.percentile(data, 50)}")
-    print(f"Q3 (75%): {np.percentile(data, 75)}")
-    print(f"90%ile: {np.percentile(data, 90)}")
-    print(f"95%ile: {np.percentile(data, 95)}")
-    print(f"99%ile: {np.percentile(data, 99)}")
-    print(f"Max: {np.max(data)}")
-    print()
+st.title("ガチャ必要石シミュレーション")
 
-N_ITERS = 6
-old_data, new_data = run_simulation(N_ITERS)
+n_iters = st.number_input("試行回数を入力してください", min_value=1000, max_value=1000000, value=10000, step=1000)
 
-print_stats("Old Specs", old_data)
-print_stats("New Specs", new_data)
+if st.button("シミュレーションを実行する"):
+    with st.spinner("アロナが一生懸命計算しています...！"):
+        old_data, new_data = run_simulation(n_iters)
 
-plt.figure(figsize=(10, 6))
-plt.hist(old_data, bins=50, alpha=0.5, label='Old Specs', color='cornflowerblue', density=True)
-plt.hist(new_data, bins=50, alpha=0.5, label='New Specs', color='lightpink', density=True)
-plt.title(f'Distribution of Required Stones (N={N_ITERS})')
-plt.xlabel('Required Stones')
-plt.ylabel('Probability Density')
-plt.legend()
-plt.grid(True, linestyle='--', alpha=0.7)
-plt.show()
+        st.subheader("統計データ")
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.write("--- 旧仕様 ---")
+            st.write(f"平均: {np.mean(old_data):.1f}")
+            st.write(f"中央値: {np.percentile(old_data, 50)}")
+            st.write(f"95%ile: {np.percentile(old_data, 95)}")
+            st.write(f"最大値: {np.max(old_data)}")
 
-plt.figure(figsize=(10, 6))
-bplot = plt.boxplot([old_data, new_data], labels=['Old Specs', 'New Specs'], patch_artist=True, medianprops=dict(color='red', linewidth=2))
-colors = ['cornflowerblue', 'lightpink']
-for patch, color in zip(bplot['boxes'], colors):
-    patch.set_facecolor(color)
-plt.title(f'Boxplot of Required Stones (N={N_ITERS})')
-plt.ylabel('Required Stones')
-plt.grid(True, linestyle='--', alpha=0.7)
-plt.show()
+        with col2:
+            st.write("--- 新仕様 ---")
+            st.write(f"平均: {np.mean(new_data):.1f}")
+            st.write(f"中央値: {np.percentile(new_data, 50)}")
+            st.write(f"95%ile: {np.percentile(new_data, 95)}")
+            st.write(f"最大値: {np.max(new_data)}")
 
-plt.figure(figsize=(10, 6))
-x_old = np.sort(old_data)
-y_old = np.arange(1, len(x_old) + 1) / len(x_old)
-x_new = np.sort(new_data)
-y_new = np.arange(1, len(x_new) + 1) / len(x_new)
-plt.plot(x_old, y_old, label='Old Specs', color='cornflowerblue', linewidth=2)
-plt.plot(x_new, y_new, label='New Specs', color='lightpink', linewidth=2)
-plt.title(f'Cumulative Distribution Function (N={N_ITERS})')
-plt.xlabel('Required Stones')
-plt.ylabel('Cumulative Probability')
-plt.legend()
-plt.grid(True, linestyle='--', alpha=0.7)
-plt.show()
+        st.subheader("分布 (ヒストグラム)")
+        fig1, ax1 = plt.subplots(figsize=(10, 6))
+        ax1.hist(old_data, bins=50, alpha=0.5, label='Old Specs', color='cornflowerblue', density=True)
+        ax1.hist(new_data, bins=50, alpha=0.5, label='New Specs', color='lightpink', density=True)
+        ax1.legend()
+        ax1.grid(True, linestyle='--', alpha=0.7)
+        st.pyplot(fig1)
+
+        st.subheader("散らばり (箱ひげ図)")
+        fig2, ax2 = plt.subplots(figsize=(10, 6))
+        bplot = ax2.boxplot([old_data, new_data], tick_labels=['Old Specs', 'New Specs'], patch_artist=True, medianprops=dict(color='red', linewidth=2))
+        colors = ['cornflowerblue', 'lightpink']
+        for patch, color in zip(bplot['boxes'], colors):
+            patch.set_facecolor(color)
+        ax2.grid(True, linestyle='--', alpha=0.7)
+        st.pyplot(fig2)
+
+        st.subheader("累積分布 (CDF)")
+        fig3, ax3 = plt.subplots(figsize=(10, 6))
+        x_old = np.sort(old_data)
+        y_old = np.arange(1, len(x_old) + 1) / len(x_old)
+        x_new = np.sort(new_data)
+        y_new = np.arange(1, len(x_new) + 1) / len(x_new)
+        ax3.plot(x_old, y_old, label='Old Specs', color='cornflowerblue', linewidth=2)
+        ax3.plot(x_new, y_new, label='New Specs', color='lightpink', linewidth=2)
+        ax3.legend()
+        ax3.grid(True, linestyle='--', alpha=0.7)
+        st.pyplot(fig3)
