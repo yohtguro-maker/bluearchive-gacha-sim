@@ -82,7 +82,19 @@ def run_simulation(n_iters):
     return old_stones_list, new_stones_list
 
 st.title("ガチャ必要石シミュレーション")
-
+st.markdown(
+    """
+    <style>
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    .viewerBadge_container__1QSob {display: none;}
+    [data-testid="stDecoration"] {display: none;}
+    [data-testid="stToolbar"] {display: none;}
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 n_iters = st.number_input("試行回数を入力してください", min_value=1, max_value=1000000, value=10000, step=1)
 
 if st.button("シミュレーションを実行する"):
